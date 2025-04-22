@@ -86,6 +86,7 @@ export function DatasetsList({ search }: DatasetsListProps) {
           limit: 10,
           models: ["card"],
           include_dashboard_questions: true,
+          include_metadata: true,
         }
       : skipToken,
     {
@@ -93,9 +94,12 @@ export function DatasetsList({ search }: DatasetsListProps) {
     },
   );
 
-  const { data: allRecents = [] } = useListRecentsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: allRecents = [] } = useListRecentsQuery(
+    { include_metadata: true },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   const items = useMemo(() => {
     if (
@@ -107,13 +111,21 @@ export function DatasetsList({ search }: DatasetsListProps) {
         .filter((maybeCard) =>
           ["card", "dataset", "metric"].includes(maybeCard.model),
         )
-        .map((card) => createDataSource("card", card.id, card.name));
+        .map((card) => ({
+          ...createDataSource("card", card.id, card.name),
+          display: card.display,
+          result_metadata: card.result_metadata,
+        }));
     }
     return result.data
       .map((item) =>
         typeof item.id === "number" &&
         shouldIncludeDashboardQuestion(item, dashboardId)
-          ? createDataSource("card", item.id, item.name)
+          ? {
+              ...createDataSource("card", item.id, item.name),
+              display: item.display,
+              result_metadata: item.result_metadata,
+            }
           : null,
       )
       .filter(isNotNull);
