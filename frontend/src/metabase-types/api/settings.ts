@@ -433,6 +433,7 @@ interface PublicSettings {
   version: Version;
   "version-info-last-checked": string | null;
   "airgap-enabled": boolean;
+  "chart-generated": boolean;
 }
 
 export type UserSettings = {
