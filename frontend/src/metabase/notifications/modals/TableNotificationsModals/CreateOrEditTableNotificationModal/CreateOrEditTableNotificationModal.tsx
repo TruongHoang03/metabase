@@ -8,8 +8,8 @@ import {
   useGetChannelInfoQuery,
   useGetDefaultNotificationTemplateQuery,
   useGetNotificationPayloadExampleQuery,
-  useLazyGetNotificationPayloadExampleQuery,
   useListChannelsQuery,
+  usePreviewNotificationTemplateQuery, // <-- Import the new hook
   useUpdateNotificationMutation,
 } from "metabase/api";
 import { useEscapeToCloseModal } from "metabase/common/hooks/use-escape-to-close-modal";
@@ -28,14 +28,29 @@ import { AlertModalSettingsBlock } from "metabase/notifications/modals/shared/co
 import { AlertTriggerIcon } from "metabase/notifications/modals/shared/components/AlertTriggerIcon";
 import type { ChannelsSupportingCustomTemplates } from "metabase/notifications/modals/shared/components/NotificationChannels/NotificationChannelsPicker/NotificationChannelsPicker";
 import { NotificationChannelsPicker } from "metabase/notifications/modals/shared/components/NotificationChannels/NotificationChannelsPicker/NotificationChannelsPicker";
+import type { ChannelTemplate } from "metabase/notifications/types"; // <-- Import ChannelTemplate from correct path
 import { getDefaultTableNotificationRequest } from "metabase/notifications/utils";
 import { addUndo } from "metabase/redux/undo";
 import { canAccessSettings, getUser } from "metabase/selectors/user";
-import { Button, Flex, Icon, Modal, Stack, Text, rem } from "metabase/ui";
+import { brandLight, white } from "metabase/lib/colors";
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Loader,
+  Modal,
+  Stack,
+  Text,
+  rem,
+} from "metabase/ui";
+import { Avatar } from "metabase/components/UserAvatar/UserAvatar";
 import type {
   CreateTableNotificationRequest,
+  NotificationChannelType,
   NotificationHandler,
   NotificationTriggerEvent,
+  PreviewNotificationTemplateResponse,
   TableId,
   TableNotification,
   UpdateTableNotificationRequest,
@@ -46,10 +61,6 @@ type TableNotificationTriggerOption = {
     eventName: NotificationTriggerEvent;
   };
   label: string;
-};
-
-const formatJsonForTooltip = (json: any) => {
-  return json ? JSON.stringify(json, null, 2) : "";
 };
 
 const NOTIFICATION_TRIGGER_OPTIONS_MAP: Record<
@@ -95,59 +106,123 @@ type CreateOrEditTableNotificationModalProps = {
 interface PreviewMessagePanelProps {
   opened: boolean;
   onClose: () => void;
-  channelType?: ChannelsSupportingCustomTemplates;
+  isLoading: boolean; // <-- Add isLoading prop
+  error: any; // <-- Add error prop
+  previewContent?: PreviewNotificationTemplateResponse["rendered"]; // <-- Add previewContent prop
 }
 
 const PreviewMessagePanel = ({
   opened,
   onClose,
-  channelType,
+  isLoading, // <-- Destructure isLoading
+  error, // <-- Destructure error
+  previewContent, // <-- Destructure previewContent
 }: PreviewMessagePanelProps) => {
   if (!opened) {
     return null;
   }
 
+  const htmlContent = previewContent?.body?.[0]?.content;
+
   return (
     <Flex
       direction="column"
       h="100%"
-      w="50%"
+      mt="1.5rem"
+      px="2.5rem"
+      gap="md"
       style={{
-        // position: "absolute",
-        // right: 0,
-        // top: 0,
-        // bottom: 0,
         height: "100%",
-        borderLeft: "1px solid red",
+        borderLeft: "1px solid var(--mb-color-border)",
         flexGrow: 1,
-        // backgroundColor: "white",
-        // zIndex: 10,
+        flexShrink: 0,
       }}
     >
-      <Flex
-        p="md"
-        // justify="space-between"
-        gap="1rem"
-        align="center"
-        style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
-      >
+      <Flex gap="sm" align="center">
         <Icon
-          name="close"
+          tooltip={t`Close Preview`}
+          name="eye_crossed_out"
           size={16}
-          style={{ cursor: "pointer" }}
           onClick={onClose}
+          style={{
+            cursor: "pointer",
+          }}
         />
-        <Text fw={600} size="lg">{t`Preview Message`}</Text>
+        <Text size="lg" fw={700}>{t`Preview`}</Text>
       </Flex>
-      <Flex p="md" direction="column" style={{ flex: 1, overflow: "auto" }}>
-        {channelType && (
-          <Text size="sm" c="dimmed">
-            {channelType === "email"
-              ? t`Email preview will be displayed here`
-              : t`Slack message preview will be displayed here`}
+      <Box style={{ overflowY: "auto", flexGrow: 1 }}>
+        {isLoading && (
+          <Flex align="center" justify="center" gap="sm" py="md">
+            <Loader size={12} />
+            <Text size="lg" c="text-medium">{t`Loading preview...`}</Text>
+          </Flex>
+        )}
+        {error && (
+          <Text color="error">
+            {t`Error loading preview:`} {JSON.stringify(error)}
           </Text>
         )}
-      </Flex>
+        {previewContent ? (
+          <Box
+            style={{
+              border: "1px solid var(--mb-color-border)",
+              borderRadius: 10,
+              overflow: "hidden",
+              background: white,
+              boxShadow: "0 1px 2px 0 rgba(16,30,54,0.03)",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 120,
+            }}
+          >
+            {/* Header */}
+            <Box
+              bg={brandLight}
+              py="md"
+              px="lg"
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "flex-start",
+                gap: 16,
+              }}
+            >
+              <Avatar size={32} style={{ flexShrink: 0 }}>
+                {previewContent.from || "?"}
+              </Avatar>
+              <Box style={{ flex: 1 }}>
+                <Text size="sm" fw={600} mb={2}>
+                  {t`From:`}
+                </Text>
+                <Text size="sm" mb={6}>
+                  {previewContent.from}
+                </Text>
+                {previewContent.bcc.length > 0 && (
+                  <>
+                    <Text size="sm" fw={600} mb={2}>{t`BCC:`}</Text>
+                    <Text size="sm" mb={6}>
+                      {previewContent.bcc.join(", ")}
+                    </Text>
+                  </>
+                )}
+                <Text size="sm" fw={600} mb={2}>{t`Subject:`}</Text>
+                <Text size="sm">{previewContent.subject}</Text>
+              </Box>
+            </Box>
+            {/* Body */}
+            <Box bg={white} p="lg" style={{ width: "100%" }}>
+              {htmlContent ? (
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+              ) : (
+                <Text color="text-medium">{t`(No body content)`}</Text>
+              )}
+            </Box>
+          </Box>
+        ) : (
+          <Text color="text-medium">{t`No preview available.`}</Text>
+        )}
+      </Box>
     </Flex>
   );
 };
@@ -163,10 +238,10 @@ export const CreateOrEditTableNotificationModal = ({
   const user = useSelector(getUser);
   const userCanAccessSettings = useSelector(canAccessSettings);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewChannelType, setPreviewChannelType] = useState<
-    ChannelsSupportingCustomTemplates | undefined
-  >();
+  const [previewTemplate, setPreviewTemplate] =
+    useState<ChannelTemplate | null>(null); // <-- State for template to preview
 
+  const isEditMode = !!notification?.id;
   const [requestBody, setRequestBody] = useState<
     CreateTableNotificationRequest | UpdateTableNotificationRequest | null
   >(null);
@@ -208,8 +283,6 @@ export const CreateOrEditTableNotificationModal = ({
       skip: !requestBody?.payload?.event_name || channelTypes.length === 0,
     },
   );
-
-  const isEditMode = !!notification;
 
   const { data: channelSpec, isLoading: isLoadingChannelInfo } =
     useGetChannelInfoQuery();
@@ -333,17 +406,41 @@ export const CreateOrEditTableNotificationModal = ({
   useEscapeToCloseModal(handleCloseAttempt, { capture: false });
 
   const handlePreviewClick = useCallback(
-    (channelType: ChannelsSupportingCustomTemplates) => {
-      setPreviewChannelType(channelType);
-      setPreviewOpen(true);
+    (channelType: NotificationChannelType) => {
+      const handler = requestBody?.handlers.find(
+        (h) => h.channel_type === channelType && h.template,
+      );
+      const currentTemplate =
+        handler?.template || defaultTemplates?.[channelType];
+      // debugger;
+      if (currentTemplate) {
+        setPreviewTemplate(currentTemplate);
+        setPreviewOpen(true);
+      } else {
+        // Handle case where template isn't found (shouldn't happen if button is shown)
+        console.error("Template not found for preview channel:", channelType);
+        setPreviewTemplate(null);
+        setPreviewOpen(false);
+      }
     },
-    [],
+    [requestBody, defaultTemplates],
   );
 
   const handlePreviewClose = useCallback(() => {
     setPreviewOpen(false);
-    setPreviewChannelType(undefined);
+    setPreviewTemplate(null);
   }, []);
+
+  // Fetch preview when panel is open and a template is selected
+  const {
+    data: previewData,
+    isLoading: isPreviewLoading,
+    error: previewError,
+  } = usePreviewNotificationTemplateQuery(
+    previewOpen && requestBody && previewTemplate
+      ? { notification: requestBody, template: previewTemplate }
+      : skipToken,
+  );
 
   if (!isLoadingChannelInfo && channelSpec && !channelRequirementsMet) {
     return (
@@ -364,7 +461,7 @@ export const CreateOrEditTableNotificationModal = ({
     <Modal
       data-testid="table-notification-create"
       opened
-      size={previewOpen ? rem(900) : rem(600)}
+      size={previewOpen ? rem(1000) : rem(700)}
       onClose={handleCloseAttempt}
       padding="2.5rem"
       closeOnEscape={false}
@@ -373,17 +470,14 @@ export const CreateOrEditTableNotificationModal = ({
         body: {
           paddingLeft: 0,
           paddingRight: 0,
-          // position: "relative",
         },
-        // inner: {
-        //   transition: "width 0.3s ease",
-        // },
       }}
     >
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: previewOpen ? "1fr 1fr" : "1fr",
+          width: "100%",
+          gridTemplateColumns: previewOpen ? "50% 50%" : "1fr",
           transition: "grid-template-columns 0.3s ease",
         }}
       >
@@ -446,7 +540,9 @@ export const CreateOrEditTableNotificationModal = ({
           <PreviewMessagePanel
             opened={true}
             onClose={handlePreviewClose}
-            channelType={previewChannelType}
+            isLoading={isPreviewLoading} // <-- Pass loading state
+            error={previewError} // <-- Pass error state
+            previewContent={previewData?.rendered} // <-- Pass rendered content
           />
         )}
       </div>

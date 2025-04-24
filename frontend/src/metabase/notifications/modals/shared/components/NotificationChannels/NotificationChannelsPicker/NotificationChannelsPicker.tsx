@@ -163,7 +163,7 @@ interface NotificationChannelsPickerProps {
   getInvalidRecipientText?: (domains: string) => string;
   enableTemplates?: boolean;
   templateContext?: Record<string, any>;
-  onPreviewClick?: (channelType: ChannelsSupportingCustomTemplates) => void;
+  onPreviewClick?: (channelType: NotificationChannelType) => void;
   defaultTemplates?: Record<
     string,
     {
@@ -648,8 +648,10 @@ export const NotificationChannelsPicker = ({
                       {onPreviewClick && (
                         <AccordionButton
                           icon="eye"
-                          label={t`Preview message`}
-                          onClick={() => onPreviewClick("email")}
+                          label={t`Preview email message`}
+                          onClick={() =>
+                            onPreviewClick(templateStateKeyMap["email"])
+                          }
                         />
                       )}
                       <TemplateHelperTooltip
@@ -747,13 +749,6 @@ export const NotificationChannelsPicker = ({
                       style={{ marginRight: "auto" }}
                     >{t`Custom Slack message`}</Text>
                     <Flex gap="xs" align="center">
-                      {onPreviewClick && (
-                        <AccordionButton
-                          icon="eye"
-                          label={t`Preview message`}
-                          onClick={() => onPreviewClick("slack")}
-                        />
-                      )}
                       <TemplateHelperTooltip
                         formattedJson={formattedTemplateContext}
                       />
