@@ -9,13 +9,14 @@ import {
   useGetDefaultNotificationTemplateQuery,
   useGetNotificationPayloadExampleQuery,
   useListChannelsQuery,
-  usePreviewNotificationTemplateQuery, // <-- Import the new hook
+  usePreviewNotificationTemplateQuery,
   useUpdateNotificationMutation,
 } from "metabase/api";
 import { useEscapeToCloseModal } from "metabase/common/hooks/use-escape-to-close-modal";
 import ButtonWithStatus from "metabase/components/ButtonWithStatus";
 import { ConfirmModal } from "metabase/components/ConfirmModal";
 import { AutoWidthSelect } from "metabase/components/Schedule/AutoWidthSelect";
+import { Avatar } from "metabase/components/UserAvatar/UserAvatar";
 import CS from "metabase/css/core/index.css";
 import { alertIsValid } from "metabase/lib/notifications";
 import {
@@ -26,13 +27,10 @@ import { useDispatch, useSelector } from "metabase/lib/redux";
 import { ChannelSetupModal } from "metabase/notifications/modals/shared/ChannelSetupModal";
 import { AlertModalSettingsBlock } from "metabase/notifications/modals/shared/components/AlertModalSettingsBlock/AlertModalSettingsBlock";
 import { AlertTriggerIcon } from "metabase/notifications/modals/shared/components/AlertTriggerIcon";
-import type { ChannelsSupportingCustomTemplates } from "metabase/notifications/modals/shared/components/NotificationChannels/NotificationChannelsPicker/NotificationChannelsPicker";
 import { NotificationChannelsPicker } from "metabase/notifications/modals/shared/components/NotificationChannels/NotificationChannelsPicker/NotificationChannelsPicker";
-import type { ChannelTemplate } from "metabase/notifications/types"; // <-- Import ChannelTemplate from correct path
 import { getDefaultTableNotificationRequest } from "metabase/notifications/utils";
 import { addUndo } from "metabase/redux/undo";
 import { canAccessSettings, getUser } from "metabase/selectors/user";
-import { brandLight, white } from "metabase/lib/colors";
 import {
   Box,
   Button,
@@ -44,8 +42,8 @@ import {
   Text,
   rem,
 } from "metabase/ui";
-import { Avatar } from "metabase/components/UserAvatar/UserAvatar";
 import type {
+  ChannelTemplate,
   CreateTableNotificationRequest,
   NotificationChannelType,
   NotificationHandler,
@@ -106,17 +104,17 @@ type CreateOrEditTableNotificationModalProps = {
 interface PreviewMessagePanelProps {
   opened: boolean;
   onClose: () => void;
-  isLoading: boolean; // <-- Add isLoading prop
-  error: any; // <-- Add error prop
+  isLoading: boolean;
+  error: any;
   previewContent?: PreviewNotificationTemplateResponse["rendered"]; // <-- Add previewContent prop
 }
 
 const PreviewMessagePanel = ({
   opened,
   onClose,
-  isLoading, // <-- Destructure isLoading
-  error, // <-- Destructure error
-  previewContent, // <-- Destructure previewContent
+  isLoading,
+  error,
+  previewContent,
 }: PreviewMessagePanelProps) => {
   if (!opened) {
     return null;
@@ -134,8 +132,8 @@ const PreviewMessagePanel = ({
       style={{
         height: "100%",
         borderLeft: "1px solid var(--mb-color-border)",
-        flexGrow: 1,
-        flexShrink: 0,
+        position: "sticky",
+        top: 0,
       }}
     >
       <Flex gap="sm" align="center">
@@ -168,17 +166,16 @@ const PreviewMessagePanel = ({
               border: "1px solid var(--mb-color-border)",
               borderRadius: 10,
               overflow: "hidden",
-              background: white,
-              boxShadow: "0 1px 2px 0 rgba(16,30,54,0.03)",
+              background: "var(--mb-color-bg-white)",
               width: "100%",
               display: "flex",
               flexDirection: "column",
-              minHeight: 120,
+              // minHeight: 120,
             }}
           >
             {/* Header */}
             <Box
-              bg={brandLight}
+              bg="var(--mb-color-bg-white)"
               py="md"
               px="lg"
               style={{
@@ -186,6 +183,7 @@ const PreviewMessagePanel = ({
                 flexDirection: "row",
                 alignItems: "flex-start",
                 gap: 16,
+                borderBottom: "1px solid var(--mb-color-border)",
               }}
             >
               <Avatar size={32} style={{ flexShrink: 0 }}>
@@ -211,7 +209,7 @@ const PreviewMessagePanel = ({
               </Box>
             </Box>
             {/* Body */}
-            <Box bg={white} p="lg" style={{ width: "100%" }}>
+            <Box bg="var(--mb-color-bg-white)" p="lg" style={{ width: "100%" }}>
               {htmlContent ? (
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
               ) : (
@@ -373,9 +371,9 @@ export const CreateOrEditTableNotificationModal = ({
       );
 
       if (isEditMode) {
-        onNotificationUpdated();
+        onNotificationUpdated?.();
       } else {
-        onNotificationCreated();
+        onNotificationCreated?.();
       }
     }
   };
@@ -385,19 +383,23 @@ export const CreateOrEditTableNotificationModal = ({
     : hasConfiguredEmailChannel;
 
   const hasChanges = useMemo(
-    () => !isEqual(requestBody, notification),
+    () => notification && !isEqual(requestBody, notification),
     [requestBody, notification],
   );
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const handleCloseAttempt = useCallback(() => {
+    if (isConfirmModalOpen) {
+      return;
+    }
+
     if (hasChanges) {
       setIsConfirmModalOpen(true);
     } else {
       onClose();
     }
-  }, [hasChanges, onClose]);
+  }, [hasChanges, onClose, isConfirmModalOpen]);
 
   const handleConfirmDiscard = useCallback(() => {
     setIsConfirmModalOpen(false);
@@ -412,13 +414,10 @@ export const CreateOrEditTableNotificationModal = ({
       );
       const currentTemplate =
         handler?.template || defaultTemplates?.[channelType];
-      // debugger;
       if (currentTemplate) {
         setPreviewTemplate(currentTemplate);
         setPreviewOpen(true);
       } else {
-        // Handle case where template isn't found (shouldn't happen if button is shown)
-        console.error("Template not found for preview channel:", channelType);
         setPreviewTemplate(null);
         setPreviewOpen(false);
       }
@@ -461,7 +460,7 @@ export const CreateOrEditTableNotificationModal = ({
     <Modal
       data-testid="table-notification-create"
       opened
-      size={previewOpen ? rem(1000) : rem(700)}
+      size={previewOpen ? rem(1000) : rem(680)}
       onClose={handleCloseAttempt}
       padding="2.5rem"
       closeOnEscape={false}
@@ -475,9 +474,11 @@ export const CreateOrEditTableNotificationModal = ({
     >
       <div
         style={{
+          position: "relative",
           display: "grid",
           width: "100%",
-          gridTemplateColumns: previewOpen ? "50% 50%" : "1fr",
+          height: "100%",
+          gridTemplateColumns: previewOpen ? "50% 50%" : "100%",
           transition: "grid-template-columns 0.3s ease",
         }}
       >
@@ -570,6 +571,7 @@ export const CreateOrEditTableNotificationModal = ({
           onConfirm={handleConfirmDiscard}
           confirmButtonText={t`Discard`}
           closeButtonText={t`Cancel`}
+          closeOnEscape={false}
           confirmButtonPrimary={false}
         />
       )}

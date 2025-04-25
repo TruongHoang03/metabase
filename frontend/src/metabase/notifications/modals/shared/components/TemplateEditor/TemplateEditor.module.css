@@ -51,7 +51,7 @@
     :global(.cm-scroller) {
       overflow-x: hidden;
       overflow-y: hidden;
-      display: flex;
+      /* display: flex; */
       align-items: center;
     }
 

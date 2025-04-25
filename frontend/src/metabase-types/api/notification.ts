@@ -86,7 +86,7 @@ export type TemplateDetails = {
 };
 
 export type ChannelTemplate = {
-  name: string;
+  name?: string;
   channel_type: string;
   details: TemplateDetails;
 };
