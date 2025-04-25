@@ -9,7 +9,7 @@ import {
   getVisualizerPrimaryColumn,
 } from "metabase/visualizer/selectors";
 import type { Field, VisualizationDisplay } from "metabase-types/api";
-import type { VisualizerDataSource } from "metabase-types/store/visualizer";
+import type { VisualizerDataSource } from "metabase-types/api";
 
 import { useVisualizerUi } from "../../VisualizerUiContext";
 
