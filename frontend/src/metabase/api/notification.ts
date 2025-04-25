@@ -135,12 +135,12 @@ export const notificationApi = Api.injectEndpoints({
       PreviewNotificationTemplateResponse,
       PreviewNotificationTemplateRequest
     >({
-      query: (body) => ({
-        method: "POST",
-        url: "/api/notification/preview_template",
-        body,
-      }),
-      // No tags needed as this is a transient preview fetch
+      query: (body) =>
+        console.log(body) || {
+          method: "POST",
+          url: "/api/notification/preview_template",
+          body,
+        },
     }),
   }),
 });
@@ -159,6 +159,7 @@ export const {
   useGetNotificationPayloadExampleQuery,
   useGetDefaultNotificationTemplateQuery,
   usePreviewNotificationTemplateQuery,
+  useLazyPreviewNotificationTemplateQuery,
 } = notificationApi;
 
 export const useTableNotificationsQuery = (
