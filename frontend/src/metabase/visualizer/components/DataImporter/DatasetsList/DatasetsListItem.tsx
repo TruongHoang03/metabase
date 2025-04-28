@@ -8,8 +8,11 @@ import {
   getVisualizationType,
   getVisualizerPrimaryColumn,
 } from "metabase/visualizer/selectors";
-import type { Field, VisualizationDisplay } from "metabase-types/api";
-import type { VisualizerDataSource } from "metabase-types/api";
+import type {
+  Field,
+  VisualizationDisplay,
+  VisualizerDataSource,
+} from "metabase-types/api";
 
 import { useVisualizerUi } from "../../VisualizerUiContext";
 
