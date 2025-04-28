@@ -99,6 +99,9 @@ export const PublicOrEmbeddedDashboard = ({
   onLoad,
   onLoadWithoutCards,
   cardTitled,
+  withFooter,
+  onError,
+  getClickActionMode,
 }: Pick<
   DashboardContextProps,
   | "dashboardId"
@@ -121,6 +124,8 @@ export const PublicOrEmbeddedDashboard = ({
   | "onLoadWithoutCards"
   | "cardTitled"
   | "withFooter"
+  | "onError"
+  | "getClickActionMode"
 > &
   Pick<EmbeddingAdditionalHashOptions, "locale">) => (
   <DashboardContextProvider
@@ -144,6 +149,8 @@ export const PublicOrEmbeddedDashboard = ({
     onLoadWithoutCards={onLoadWithoutCards}
     cardTitled={cardTitled}
     withFooter={withFooter}
+    onError={onError}
+    getClickActionMode={getClickActionMode}
   >
     <PublicOrEmbeddedDashboardInner locale={locale} />
   </DashboardContextProvider>
