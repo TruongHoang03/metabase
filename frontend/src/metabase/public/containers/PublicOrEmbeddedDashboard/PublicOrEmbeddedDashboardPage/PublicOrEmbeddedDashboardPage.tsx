@@ -76,7 +76,7 @@ export const PublicOrEmbeddedDashboardPage = (props: WithRouterProps) => {
         withFooter={true}
         getClickActionMode={undefined}
         onError={(error) => {
-          dispatch(setErrorPage(error));
+          dispatch(setErrorPage(error.payload));
         }}
       />
     </>
