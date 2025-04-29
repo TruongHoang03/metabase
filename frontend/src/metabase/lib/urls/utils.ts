@@ -1,4 +1,5 @@
 import api from "metabase/lib/api";
+import { isBaseEntityID } from "metabase-types/api";
 
 export function appendSlug(path: string | number, slug?: string) {
   return slug ? `${path}-${slug}` : String(path);
@@ -6,7 +7,14 @@ export function appendSlug(path: string | number, slug?: string) {
 
 export function extractEntityId(slug = "") {
   const id = parseInt(slug, 10);
-  return Number.isSafeInteger(id) ? id : undefined;
+  if (Number.isSafeInteger(id)) {
+    return id;
+  }
+
+  if (isBaseEntityID(slug)) {
+    return slug;
+  }
+  return undefined;
 }
 
 function flattenParam([key, value]: [string, unknown]) {

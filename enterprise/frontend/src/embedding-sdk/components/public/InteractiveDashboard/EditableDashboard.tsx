@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import _ from "underscore";
 
 import { InteractiveAdHocQuestion } from "embedding-sdk/components/private/InteractiveAdHocQuestion";
 import {
@@ -11,19 +12,23 @@ import {
   useSdkDashboardParams,
 } from "embedding-sdk/hooks/private/use-sdk-dashboard-params";
 import { useSdkDispatch, useSdkSelector } from "embedding-sdk/store";
+import { getEventHandlers } from "embedding-sdk/store/selectors";
 import type { DashboardEventHandlersProps } from "embedding-sdk/types/dashboard";
 import type { MetabasePluginsConfig } from "embedding-sdk/types/plugins";
+import { Dashboard } from "metabase/dashboard/components/Dashboard/Dashboard";
 import {
   DASHBOARD_EDITING_ACTIONS,
   SDK_DASHBOARD_VIEW_ACTIONS,
 } from "metabase/dashboard/components/DashboardHeader/DashboardHeaderButtonRow/constants";
+import { DashboardContextProvider } from "metabase/dashboard/context";
 import { getIsEditing } from "metabase/dashboard/selectors";
+import { useSelector } from "metabase/lib/redux";
 import { setErrorPage } from "metabase/redux/app";
 import { getErrorPage } from "metabase/selectors/app";
+import type { Dashboard as IDashboard } from "metabase-types/api";
 
 import type { DrillThroughQuestionProps } from "../InteractiveQuestion/InteractiveQuestion";
 
-import { ConnectedDashboard } from "./ConnectedDashboard";
 import { InteractiveDashboardProvider } from "./context";
 import { useCommonDashboardParams } from "./use-common-dashboard-params";
 
@@ -58,7 +63,7 @@ export type EditableDashboardProps = {
  * @param props
  */
 export const EditableDashboard = ({
-  dashboardId: initialDashboardId,
+  dashboardId,
   initialParameters = {},
   withDownloads = false,
   drillThroughQuestionHeight,
@@ -80,15 +85,15 @@ export const EditableDashboard = ({
     refreshPeriod,
     onRefreshPeriodChange,
     setRefreshElapsedHook,
-    isLoading,
-    dashboardId,
   } = useSdkDashboardParams({
-    dashboardId: initialDashboardId,
+    dashboardId,
     withDownloads,
     withTitle: true,
     hiddenParameters: undefined,
     initialParameters,
   });
+
+  const sdkEventHandlers = useSelector(getEventHandlers);
 
   const {
     adhocQuestionUrl,
@@ -104,53 +109,47 @@ export const EditableDashboard = ({
     ? DASHBOARD_EDITING_ACTIONS
     : SDK_DASHBOARD_VIEW_ACTIONS;
 
-  const errorPage = useSdkSelector(getErrorPage);
-  const dispatch = useSdkDispatch();
-  useEffect(() => {
-    if (dashboardId) {
-      dispatch(setErrorPage(null));
-    }
-  }, [dispatch, dashboardId]);
+  const handleOnLoad = (dashboard: IDashboard) => {
+    sdkEventHandlers?.onDashboardLoad?.(dashboard);
+    onLoad?.(dashboard);
+  };
 
-  if (isLoading) {
-    return <SdkLoader />;
-  }
-
-  if (!dashboardId || errorPage?.status === 404) {
-    return <DashboardNotFoundError id={initialDashboardId} />;
-  }
+  const handleOnLoadWithoutCards = (dashboard: IDashboard) => {
+    sdkEventHandlers?.onDashboardLoadWithoutCards?.(dashboard);
+    onLoadWithoutCards?.(dashboard);
+  };
 
   return (
-    <StyledPublicComponentWrapper className={className} style={style} ref={ref}>
-      {adhocQuestionUrl ? (
-        <InteractiveAdHocQuestion
-          questionPath={adhocQuestionUrl}
-          onNavigateBack={onNavigateBackToDashboard}
-          {...drillThroughQuestionProps}
-        />
-      ) : (
-        <InteractiveDashboardProvider
-          plugins={plugins}
-          onEditQuestion={onEditQuestion}
-          dashboardActions={dashboardActions}
+    /* TODO: Combine InteractiveDashboardProvider and DashboardContextProvider */
+    <StyledPublicComponentWrapper className={className} style={style}>
+      <InteractiveDashboardProvider
+        plugins={plugins}
+        onEditQuestion={onEditQuestion}
+        dashboardActions={dashboardActions}
+      >
+        <DashboardContextProvider
+          dashboardId={dashboardId}
+          parameterQueryParams={initialParameters}
+          refreshPeriod={refreshPeriod}
+          onRefreshPeriodChange={onRefreshPeriodChange}
+          setRefreshElapsedHook={setRefreshElapsedHook}
+          isFullscreen={isFullscreen}
+          onFullscreenChange={onFullscreenChange}
+          // onNavigateToNewCardFromDashboard={onNavigateToNewCardFromDashboard}
+          // navigateToNewCardFromDashboard={onNavigateToNewCardFromDashboard}
+          downloadsEnabled={withDownloads}
+          onLoad={handleOnLoad}
+          onLoadWithoutCards={handleOnLoadWithoutCards}
+          onError={(e) => console.log(e)}
+          isNightMode={false}
+          onNightModeChange={_.noop}
+          hasNightModeToggle={false}
+          autoScrollToDashcardId={undefined}
+          reportAutoScrolledToDashcard={_.noop}
         >
-          <ConnectedDashboard
-            dashboardId={dashboardId}
-            isLoading={isLoading}
-            parameterQueryParams={initialParameters}
-            refreshPeriod={refreshPeriod}
-            onRefreshPeriodChange={onRefreshPeriodChange}
-            setRefreshElapsedHook={setRefreshElapsedHook}
-            isFullscreen={isFullscreen}
-            onFullscreenChange={onFullscreenChange}
-            noLoaderWrapper
-            onNavigateToNewCardFromDashboard={onNavigateToNewCardFromDashboard}
-            downloadsEnabled={withDownloads}
-            onLoad={onLoad}
-            onLoadWithoutCards={onLoadWithoutCards}
-          />
-        </InteractiveDashboardProvider>
-      )}
+          <Dashboard />
+        </DashboardContextProvider>
+      </InteractiveDashboardProvider>
     </StyledPublicComponentWrapper>
   );
 };
