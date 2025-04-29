@@ -1,17 +1,11 @@
-import { useEffect } from "react";
 import _ from "underscore";
 
-import { InteractiveAdHocQuestion } from "embedding-sdk/components/private/InteractiveAdHocQuestion";
-import {
-  DashboardNotFoundError,
-  SdkLoader,
-} from "embedding-sdk/components/private/PublicComponentWrapper";
 import { StyledPublicComponentWrapper } from "embedding-sdk/components/public/InteractiveDashboard/EditableDashboard.styled";
 import {
   type SdkDashboardDisplayProps,
   useSdkDashboardParams,
 } from "embedding-sdk/hooks/private/use-sdk-dashboard-params";
-import { useSdkDispatch, useSdkSelector } from "embedding-sdk/store";
+import { useSdkSelector } from "embedding-sdk/store";
 import { getEventHandlers } from "embedding-sdk/store/selectors";
 import type { DashboardEventHandlersProps } from "embedding-sdk/types/dashboard";
 import type { MetabasePluginsConfig } from "embedding-sdk/types/plugins";
@@ -23,8 +17,6 @@ import {
 import { DashboardContextProvider } from "metabase/dashboard/context";
 import { getIsEditing } from "metabase/dashboard/selectors";
 import { useSelector } from "metabase/lib/redux";
-import { setErrorPage } from "metabase/redux/app";
-import { getErrorPage } from "metabase/selectors/app";
 import type { Dashboard as IDashboard } from "metabase-types/api";
 
 import type { DrillThroughQuestionProps } from "../InteractiveQuestion/InteractiveQuestion";
