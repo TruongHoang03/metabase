@@ -1,23 +1,38 @@
 import { t } from "ttag";
 
-import { updateSettings } from "metabase/admin/settings/settings";
-import { connect } from "metabase/lib/redux";
-import { getSetting } from "metabase/selectors/settings";
-import type { Dispatch, State } from "metabase-types/store";
+import { useAdminSetting } from "metabase/api/utils";
+import { LoadingAndErrorWrapper } from "metabase/components/LoadingAndErrorWrapper";
+import type { EnterpriseSettings } from "metabase-types/api";
 
 import AuthCard from "../../components/AuthCard";
 import { LDAP_SCHEMA } from "../../constants";
 
-const mapStateToProps = (state: State) => ({
-  type: "ldap",
-  name: t`LDAP`,
-  description: t`Allows users within your LDAP directory to log in to Metabase with their LDAP credentials, and allows automatic mapping of LDAP groups to Metabase groups.`,
-  isConfigured: getSetting(state, "ldap-configured?"),
-});
+export function LdapAuthCard() {
+  const {
+    value: isLdapConfigured,
+    updateSettings,
+    settingDetails,
+    isLoading,
+  } = useAdminSetting("ldap-configured?");
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onDeactivate: () => dispatch(updateSettings(LDAP_SCHEMA.getDefault())),
-});
+  const handleDeactivate = () => {
+    return updateSettings(
+      LDAP_SCHEMA.getDefault() as Partial<EnterpriseSettings>,
+    );
+  };
 
-// eslint-disable-next-line import/no-default-export -- deprecated usage
-export default connect(mapStateToProps, mapDispatchToProps)(AuthCard);
+  if (isLoading) {
+    return <LoadingAndErrorWrapper loading />;
+  }
+
+  return (
+    <AuthCard
+      type="ldap"
+      name={t`LDAP`}
+      description={t`Allows users within your LDAP directory to log in to Metabase with their LDAP credentials, and allows automatic mapping of LDAP groups to Metabase groups.`}
+      isConfigured={!!isLdapConfigured}
+      onDeactivate={handleDeactivate}
+      setting={settingDetails}
+    />
+  );
+}

@@ -33,6 +33,7 @@ import type {
   ModelFilterControlsProps,
   ModelFilterSettings,
 } from "metabase/browse/models";
+import { NotFound } from "metabase/components/ErrorPages";
 import type { LinkProps } from "metabase/core/components/Link";
 import type { EmbeddingEntityType } from "metabase/embedding-sdk/store";
 import { getIconBase } from "metabase/lib/icon";
@@ -195,7 +196,11 @@ export const PLUGIN_ADMIN_SETTINGS_AUTH_TABS: AuthTabs[] = [];
 
 // authentication providers
 
-export const PLUGIN_AUTH_PROVIDERS: GetAuthProviders[] = [];
+export const PLUGIN_AUTH_PROVIDERS = {
+  AuthSettingsPage: NotFound,
+  UserProvisioningSettings: NotFound,
+  providers: [] as GetAuthProviders[],
+};
 
 export const PLUGIN_LDAP_FORM_FIELDS = {
   formFieldAttributes: [] as string[],

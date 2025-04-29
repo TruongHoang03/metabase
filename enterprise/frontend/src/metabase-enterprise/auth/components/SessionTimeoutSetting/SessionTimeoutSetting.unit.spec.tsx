@@ -1,5 +1,5 @@
 import { render, screen } from "__support__/ui";
-import SessionTimeoutSetting from "metabase-enterprise/auth/components/SessionTimeoutSetting";
+import { SessionTimeoutSetting } from "metabase-enterprise/auth/components/SessionTimeoutSetting";
 
 describe("SessionTimeoutSetting", () => {
   const SUCCEED_TEST_CASES = [
