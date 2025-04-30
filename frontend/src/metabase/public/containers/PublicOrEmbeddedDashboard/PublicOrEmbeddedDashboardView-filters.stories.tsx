@@ -35,9 +35,9 @@ import {
 } from "metabase-types/store/mocks";
 
 import {
-  PublicOrEmbeddedDashboardView,
-  type PublicOrEmbeddedDashboardViewProps,
-} from "./PublicOrEmbeddedDashboardView";
+  PublicOrEmbeddedDashboard,
+  type PublicOrEmbeddedDashboardProps,
+} from "./PublicOrEmbeddedDashboard";
 
 // @ts-expect-error: incompatible prop types with registerVisualization
 registerVisualization(Table);
@@ -51,8 +51,8 @@ registerVisualization(BarChart);
 const TIME_UNTIL_ALL_ELEMENTS_STOP_RESIZING = 2500;
 
 export default {
-  title: "App/Embed/PublicOrEmbeddedDashboardView/filters",
-  component: PublicOrEmbeddedDashboardView,
+  title: "App/Embed/PublicOrEmbeddedDashboard/filters",
+  component: PublicOrEmbeddedDashboard,
   decorators: [
     ReduxDecorator,
     createWaitForResizeToStopDecorator(TIME_UNTIL_ALL_ELEMENTS_STOP_RESIZING),
@@ -222,7 +222,7 @@ function createDashboard({ hasScroll }: CreateDashboardOpts = {}) {
   });
 }
 
-const Template: StoryFn<PublicOrEmbeddedDashboardViewProps> = (args) => {
+const Template: StoryFn<PublicOrEmbeddedDashboardProps> = (args) => {
   // @ts-expect-error -- custom prop to support non JSON-serializable value as args
   const parameterType: ParameterType = args.parameterType;
   const dashboard = args.dashboard;
@@ -376,14 +376,14 @@ const Template: StoryFn<PublicOrEmbeddedDashboardViewProps> = (args) => {
     ),
   };
   return (
-    <PublicOrEmbeddedDashboardView
+    <PublicOrEmbeddedDashboard
       {...args}
       parameters={PARAMETER_MAPPING[parameterType]}
     />
   );
 };
 
-type ArgType = Partial<ComponentProps<typeof PublicOrEmbeddedDashboardView>>;
+type ArgType = Partial<ComponentProps<typeof PublicOrEmbeddedDashboard>>;
 
 type ParameterType =
   | "text"

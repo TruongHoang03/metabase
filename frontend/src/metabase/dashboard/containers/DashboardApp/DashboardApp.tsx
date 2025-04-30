@@ -7,6 +7,7 @@ import ErrorBoundary from "metabase/ErrorBoundary";
 import CS from "metabase/css/core/index.css";
 import {
   addCardToDashboard,
+  navigateToNewCardFromDashboard,
   setEditingDashboard,
 } from "metabase/dashboard/actions";
 import { Dashboard } from "metabase/dashboard/components/Dashboard/Dashboard";
@@ -61,6 +62,10 @@ export const DashboardApp = ({
     dashboardId,
     parameterQueryParams,
   });
+
+  const _navigateToNewCardFromDashboard = (
+    args: NavigateToNewCardFromDashboardOpts,
+  ) => dispatch(navigateToNewCardFromDashboard(args));
 
   const {
     hasNightModeToggle,
@@ -126,6 +131,7 @@ export const DashboardApp = ({
         reportAutoScrolledToDashcard={reportAutoScrolledToDashcard}
         onLoad={onLoadDashboard}
         onError={(result) => dispatch(setErrorPage(result.payload))}
+        navigateToNewCardFromDashboard={_navigateToNewCardFromDashboard}
       >
         <DashboardTitle />
         <DashboardFavicon />
