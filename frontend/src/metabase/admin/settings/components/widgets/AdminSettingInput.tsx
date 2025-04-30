@@ -134,7 +134,7 @@ export function BasicAdminSettingInput({
       return (
         <Select
           id={name}
-          value={localValue}
+          value={localValue === null ? "" : localValue}
           onChange={handleChange}
           data={options ?? []}
         />
