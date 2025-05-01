@@ -439,25 +439,6 @@ export const getCurrentVersion = createSelector(
   },
 );
 
-export const getLatestVersion = createSelector(
-  getDerivedSettingValues,
-  (settings) => {
-    const updateChannel = settings["update-channel"] ?? "latest";
-    return settings["version-info"]?.[updateChannel]?.version;
-  },
-);
-
-export const getNewVersionAvailable = createSelector(
-  getCurrentVersion,
-  getLatestVersion,
-  (currentVersion, latestVersion) => {
-    return newVersionAvailable({
-      currentVersion,
-      latestVersion,
-    });
-  },
-);
-
 export const getSections = createSelector(
   getSettings,
   getDerivedSettingValues,
