@@ -19,16 +19,13 @@ import {
   CardTitle,
 } from "./AuthCard.styled";
 
-export type AuthSetting = Omit<SettingDefinition, "value"> & {
-  value: boolean | null;
-};
-
 export interface AuthCardProps {
-  setting: AuthSetting;
+  setting?: Pick<SettingDefinition, "is_env_setting" | "env_name">;
   type: string;
   name: string;
   title?: string;
   description: string;
+  isEnabled: boolean;
   isConfigured: boolean;
   onChange: (value: boolean) => void;
   onDeactivate: () => void;
@@ -40,12 +37,12 @@ const AuthCard = ({
   name,
   title = name,
   description,
+  isEnabled,
   isConfigured,
   onChange,
   onDeactivate,
 }: AuthCardProps) => {
-  const isEnabled = setting.value ?? false;
-  const isEnvSetting = setting.is_env_setting;
+  const isEnvSetting = setting?.is_env_setting;
 
   const [isOpened, setIsOpened] = useState(false);
 
@@ -62,12 +59,12 @@ const AuthCard = ({
     handleClose();
   }, [onDeactivate, handleClose]);
 
-  const { url: docsUrl } = useGetEnvVarDocsUrl(setting.env_name);
+  const { url: docsUrl } = useGetEnvVarDocsUrl(setting?.env_name);
 
   const footer = isEnvSetting ? (
     <Text>
       Set with env var{" "}
-      <Anchor href={docsUrl} target="_blank">{`$${setting.env_name}`}</Anchor>
+      <Anchor href={docsUrl} target="_blank">{`$${setting?.env_name}`}</Anchor>
     </Text>
   ) : null;
 

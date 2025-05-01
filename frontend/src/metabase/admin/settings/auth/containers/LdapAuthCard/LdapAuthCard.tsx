@@ -10,10 +10,12 @@ import { LDAP_SCHEMA } from "../../constants";
 export function LdapAuthCard() {
   const {
     value: isLdapConfigured,
+    updateSetting,
     updateSettings,
     settingDetails,
     isLoading,
   } = useAdminSetting("ldap-configured?");
+  const { value: isEnabled } = useAdminSetting("ldap-enabled");
 
   const handleDeactivate = () => {
     return updateSettings(
@@ -30,6 +32,13 @@ export function LdapAuthCard() {
       type="ldap"
       name={t`LDAP`}
       description={t`Allows users within your LDAP directory to log in to Metabase with their LDAP credentials, and allows automatic mapping of LDAP groups to Metabase groups.`}
+      isEnabled={!!isEnabled}
+      onChange={(newValue) =>
+        updateSetting({
+          key: "ldap-enabled",
+          value: newValue,
+        })
+      }
       isConfigured={!!isLdapConfigured}
       onDeactivate={handleDeactivate}
       setting={settingDetails}

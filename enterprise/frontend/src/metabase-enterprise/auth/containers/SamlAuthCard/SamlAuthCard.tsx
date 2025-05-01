@@ -16,6 +16,7 @@ export function SamlAuthCard() {
     settingDetails,
     isLoading,
   } = useAdminSetting("saml-configured");
+  const { value: isEnabled } = useAdminSetting("saml-enabled");
 
   const handleDeactivate = () => {
     return updateSettings(
@@ -39,6 +40,7 @@ export function SamlAuthCard() {
       name={t`SAML`}
       description={t`Allows users to login via a SAML Identity Provider.`}
       isConfigured={!!isConfigured}
+      isEnabled={!!isEnabled}
       onDeactivate={handleDeactivate}
       onChange={(newValue) =>
         updateSetting({

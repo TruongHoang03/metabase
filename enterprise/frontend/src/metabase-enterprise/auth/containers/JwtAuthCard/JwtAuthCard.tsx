@@ -16,6 +16,7 @@ export function JwtAuthCard() {
     settingDetails,
     isLoading,
   } = useAdminSetting("jwt-configured");
+  const { value: isEnabled } = useAdminSetting("jwt-enabled");
 
   const handleDeactivate = () => {
     return updateSettings(
@@ -38,15 +39,16 @@ export function JwtAuthCard() {
       type="jwt"
       name={t`JWT`}
       description={t`Allows users to login via a JWT Identity Provider.`}
+      isEnabled={!!isEnabled}
       isConfigured={!!isConfigured}
       onDeactivate={handleDeactivate}
       onChange={(newValue) =>
         updateSetting({
-          key: "saml-enabled",
+          key: "jwt-enabled",
           value: newValue,
         })
       }
-      setting={settingDetails as any}
+      setting={settingDetails}
     />
   );
 }

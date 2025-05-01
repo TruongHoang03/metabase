@@ -15,6 +15,7 @@ export function GoogleAuthCard() {
     settingDetails,
     isLoading,
   } = useAdminSetting("google-auth-configured");
+  const { value: isEnabled } = useAdminSetting("google-auth-enabled");
 
   const handleDeactivate = () => {
     return updateSettings(
@@ -32,6 +33,7 @@ export function GoogleAuthCard() {
       name={t`Google Sign-in`}
       description={t`Allows users with existing Metabase accounts to login with a Google account that matches their email address in addition to their Metabase username and password.`}
       isConfigured={!!isConfigured}
+      isEnabled={!!isEnabled}
       onDeactivate={handleDeactivate}
       onChange={(newValue) =>
         updateSetting({
@@ -39,7 +41,7 @@ export function GoogleAuthCard() {
           value: newValue,
         })
       }
-      setting={settingDetails as any}
+      setting={settingDetails}
     />
   );
 }
