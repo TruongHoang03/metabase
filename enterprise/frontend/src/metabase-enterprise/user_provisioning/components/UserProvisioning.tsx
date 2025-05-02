@@ -1,7 +1,5 @@
-import { useMemo } from "react";
 import { P, isMatching } from "ts-pattern";
 import { t } from "ttag";
-import _ from "underscore";
 
 import { BasicAdminSettingInput } from "metabase/admin/settings/components/widgets/AdminSettingInput";
 import {
@@ -48,7 +46,7 @@ const isNoErrorOrNotFoundError = isMatching(
 export const UserProvisioning = () => {
   const { data: settingValues, isLoading: settingsLoading } =
     useGetSettingsQuery();
-  const { data: elements, isLoading: detailsLoading } =
+  const { data: fields, isLoading: detailsLoading } =
     useGetAdminSettingsDetailsQuery();
   const [updateSetting] = useUpdateSettingMutation();
 
@@ -58,10 +56,6 @@ export const UserProvisioning = () => {
 
   const isLoadingToken =
     maskedTokenRequest.isLoading || regenerateTokenReq.isLoading;
-
-  const fields = useMemo(() => {
-    return _.indexBy(elements ?? [], "key");
-  }, [elements]);
 
   const isScimEnabled = !!settingValues?.["scim-enabled"];
   const isScimInitialized = !!maskedTokenRequest.data;
@@ -150,7 +144,7 @@ export const UserProvisioning = () => {
             >
               <CopyScimInput
                 label={t`SCIM endpoint URL`}
-                value={fields["scim-base-url"].value?.toString() || ""}
+                value={fields?.["scim-base-url"].value?.toString() || ""}
               />
 
               <Flex gap="sm" align="end">
@@ -214,7 +208,7 @@ export const UserProvisioning = () => {
         opened={firstEnabledModal.opened}
         onClose={firstEnabledModal.close}
         unmaskedScimToken={regenerateTokenReq.data?.unmasked_key ?? ""}
-        scimBaseUrl={fields["scim-base-url"].value?.toString() || ""}
+        scimBaseUrl={fields?.["scim-base-url"].value?.toString() || ""}
         scimError={regenerateTokenReq.error}
       />
 

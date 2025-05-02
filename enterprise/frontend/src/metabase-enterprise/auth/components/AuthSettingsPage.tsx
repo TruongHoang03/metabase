@@ -62,7 +62,7 @@ export function AuthSettingsPage({ tab = "authentication" }: { tab?: Tabs }) {
 
 function AuthenticationTab() {
   const canDisablePasswordLogin = useHasTokenFeature("disable_password_login");
-  const hasSsoConfigured = useHasSsoConfigured();
+  const hasAnySsoProviderEnabled = useHasSsoEnabled();
   return (
     <Stack gap="xl" pb="xl">
       <GoogleAuthCard />
@@ -72,7 +72,7 @@ function AuthenticationTab() {
       <ApiKeysAuthCard />
 
       <AdminSettingInput
-        hidden={!canDisablePasswordLogin || !hasSsoConfigured}
+        hidden={!canDisablePasswordLogin || !hasAnySsoProviderEnabled}
         name="enable-password-login"
         inputType="boolean"
         title={t`Enable password Authentication`}
@@ -83,13 +83,13 @@ function AuthenticationTab() {
   );
 }
 
-function useHasSsoConfigured() {
+function useHasSsoEnabled() {
   const { data: settings } = useGetSettingsQuery();
-  const hasAnySsoProvideConfigured =
+  const hasAnySsoProviderEnabled =
     settings?.["google-auth-enabled"] ||
     settings?.["ldap-enabled"] ||
     settings?.["saml-enabled"] ||
     settings?.["jwt-enabled"];
 
-  return hasAnySsoProvideConfigured;
+  return hasAnySsoProviderEnabled;
 }

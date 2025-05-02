@@ -1,5 +1,7 @@
+import { setupPropertiesEndpoints } from "__support__/server-mocks";
 import { render, screen } from "__support__/ui";
 import { SessionTimeoutSetting } from "metabase-enterprise/auth/components/SessionTimeoutSetting";
+import { createMockSettings } from "metabase-types/api/mocks";
 
 describe("SessionTimeoutSetting", () => {
   const SUCCEED_TEST_CASES = [
@@ -30,16 +32,24 @@ describe("SessionTimeoutSetting", () => {
 
   SUCCEED_TEST_CASES.map(({ value }) => {
     it(`validates ${value.amount} ${value.unit} correctly`, () => {
-      const setting = { value: value, key: "...", default: "..." };
-      render(<SessionTimeoutSetting setting={setting} onChange={jest.fn()} />);
+      setupPropertiesEndpoints(
+        createMockSettings({
+          "session-timeout": value,
+        }),
+      );
+      render(<SessionTimeoutSetting />);
       expect(screen.queryByText(/Timeout must be/)).not.toBeInTheDocument();
     });
   });
 
   FAIL_TEST_CASES.map(({ value, error }) => {
     it(`validates ${value.amount} ${value.unit} correctly`, () => {
-      const setting = { value: value, key: "...", default: "..." };
-      render(<SessionTimeoutSetting setting={setting} onChange={jest.fn()} />);
+      setupPropertiesEndpoints(
+        createMockSettings({
+          "session-timeout": value,
+        }),
+      );
+      render(<SessionTimeoutSetting />);
       expect(screen.getByText(error)).toBeInTheDocument();
     });
   });

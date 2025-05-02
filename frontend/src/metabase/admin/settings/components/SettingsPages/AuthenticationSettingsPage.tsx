@@ -1,5 +1,6 @@
 import { UpsellSSO } from "metabase/admin/upsells";
 import { useGetSettingsQuery } from "metabase/api";
+import { hasAnySsoFeature } from "metabase/common/utils/plan";
 import Breadcrumbs from "metabase/components/Breadcrumbs";
 import { PLUGIN_AUTH_PROVIDERS } from "metabase/plugins";
 import { Box, Flex, Stack } from "metabase/ui";
@@ -48,9 +49,5 @@ const useHasSso = () => {
   const { data: settings } = useGetSettingsQuery();
 
   const tokenFeatures = settings?.["token-features"];
-  const ssoFeatures = Object.entries(tokenFeatures ?? {}).filter(([key]) =>
-    key.startsWith("sso"),
-  );
-
-  return ssoFeatures.some(([, value]) => value === true);
+  return hasAnySsoFeature(tokenFeatures);
 };
