@@ -154,7 +154,8 @@
   Returns a byte array of a png file."
   [data settings]
   (let [svg-string (.asString (js.engine/execute-fn-name (context) "funnel" (json/encode data)
-                                                         (json/encode settings)))]
+                                                         (json/encode settings)
+                                                         (json/encode (public-settings/token-features))))]
     (svg-string->bytes svg-string)))
 
 (defn ^:dynamic *javascript-visualization*
@@ -178,7 +179,8 @@ This functions is dynanic only for testing purposes."
   (let [svg-string (.asString (js.engine/execute-fn-name (context) "row_chart"
                                                          (json/encode settings)
                                                          (json/encode data)
-                                                         (json/encode (public-settings/application-colors))))]
+                                                         (json/encode (public-settings/application-colors))
+                                                         (json/encode (public-settings/token-features))))]
     (svg-string->bytes svg-string)))
 
 (defn gauge
@@ -186,7 +188,8 @@ This functions is dynanic only for testing purposes."
   [card data]
   (let [js-res (js.engine/execute-fn-name (context) "gauge"
                                           (json/encode card)
-                                          (json/encode data))
+                                          (json/encode data)
+                                          (json/encode (public-settings/token-features)))
         svg-string (.asString js-res)]
     (svg-string->bytes svg-string)))
 
@@ -196,7 +199,8 @@ This functions is dynanic only for testing purposes."
   (let [js-res (js.engine/execute-fn-name (context) "progress"
                                           (json/encode {:value value :goal goal})
                                           (json/encode settings)
-                                          (json/encode (public-settings/application-colors)))
+                                          (json/encode (public-settings/application-colors))
+                                          (json/encode (public-settings/token-features)))
         svg-string (.asString js-res)]
     (svg-string->bytes svg-string)))
 
