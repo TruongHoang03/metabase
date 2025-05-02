@@ -14,8 +14,8 @@ import {
 import type {
   DashboardId,
   SearchResult,
+  VisualizerCardDataSource,
   VisualizerDataSource,
-  VisualizerDataSourceId,
 } from "metabase-types/api";
 
 import { useVisualizerUi } from "../../VisualizerUiContext";
@@ -44,9 +44,11 @@ export function DatasetsList({ search }: DatasetsListProps) {
   );
 
   const handleAddDataSource = useCallback(
-    (id: VisualizerDataSourceId) => {
-      dispatch(addDataSource(id));
-      setDataSourceExpanded(id, true);
+    (source: VisualizerCardDataSource) => {
+      dispatch(
+        addDataSource({ cardId: source.cardId, cardEntityId: source.sourceId }),
+      );
+      setDataSourceExpanded(source.id, true);
     },
     [dispatch, setDataSourceExpanded],
   );
@@ -60,22 +62,22 @@ export function DatasetsList({ search }: DatasetsListProps) {
   );
 
   const handleToggleDataSource = useCallback(
-    (item: VisualizerDataSource) => {
+    (item: VisualizerCardDataSource) => {
       if (dataSourceIds.has(item.id)) {
         handleRemoveDataSource(item);
       } else {
-        handleAddDataSource(item.id);
+        handleAddDataSource(item);
       }
     },
     [dataSourceIds, handleAddDataSource, handleRemoveDataSource],
   );
 
   const handleSwapDataSources = useCallback(
-    (item: VisualizerDataSource) => {
+    (item: VisualizerCardDataSource) => {
       dataSources.forEach((dataSource) => {
         handleRemoveDataSource(dataSource);
       });
-      handleAddDataSource(item.id);
+      handleAddDataSource(item);
     },
     [dataSources, handleAddDataSource, handleRemoveDataSource],
   );
@@ -98,7 +100,7 @@ export function DatasetsList({ search }: DatasetsListProps) {
     refetchOnMountOrArgChange: true,
   });
 
-  const items = useMemo(() => {
+  const items: VisualizerCardDataSource[] = useMemo(() => {
     if (
       search.length === 0 ||
       !Array.isArray(result.data) ||
@@ -108,13 +110,19 @@ export function DatasetsList({ search }: DatasetsListProps) {
         .filter((maybeCard) =>
           ["card", "dataset", "metric"].includes(maybeCard.model),
         )
-        .map((card) => createDataSource("card", card.id, card.name));
+        .map((card) => ({
+          ...createDataSource("card", card.entity_id, card.name),
+          cardId: card.id,
+        }));
     }
     return result.data
       .map((item) =>
-        typeof item.id === "number" &&
+        typeof item.entity_id === "string" &&
         shouldIncludeDashboardQuestion(item, dashboardId)
-          ? createDataSource("card", item.id, item.name)
+          ? {
+              ...createDataSource("card", item.entity_id, item.name),
+              cardId: item.id,
+            }
           : null,
       )
       .filter(isNotNull);

@@ -24,6 +24,7 @@ import {
   setDraggedItem,
 } from "metabase/visualizer/visualizer.slice";
 import type {
+  Card,
   VisualizerDataSourceId,
   VisualizerVizDefinition,
 } from "metabase-types/api";
@@ -65,7 +66,7 @@ const isVerticalDraggedItem = (draggedItem: DraggedItem | null) => {
 interface VisualizerProps {
   className?: string;
   initialDataSources?: VisualizerDataSourceId[];
-  onSave: (visualization: VisualizerVizDefinition) => void;
+  onSave: (visualization: VisualizerVizDefinition, cards: Card[]) => void;
   onClose: () => void;
   saveLabel?: string;
   allowSaveWhenPristine?: boolean;

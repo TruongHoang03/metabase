@@ -10,7 +10,7 @@ import { getIsDirty } from "metabase/visualizer/selectors";
 import { getDataSourceIdsFromColumnValueMappings } from "metabase/visualizer/utils";
 import { initializeVisualizer } from "metabase/visualizer/visualizer.slice";
 import type {
-  CardId,
+  Card,
   VisualizerDataSourceId,
   VisualizerVizDefinition,
 } from "metabase-types/api";
@@ -23,8 +23,9 @@ interface VisualizerModalProps {
   initialState?:
     | {
         state: VisualizerVizDefinition;
+        cardByEntityId: Record<string, Card>;
       }
-    | { cardId: CardId };
+    | { card: Card };
 }
 
 export function VisualizerModal({
@@ -64,8 +65,8 @@ export function VisualizerModal({
     if (!initialState) {
       return;
     }
-    if ("cardId" in initialState) {
-      const id: VisualizerDataSourceId = `card:${initialState.cardId}`;
+    if ("card" in initialState) {
+      const id: VisualizerDataSourceId = `card:${initialState.card.entity_id}`;
       return [id];
     }
     if (initialState?.state?.columnValuesMapping) {
