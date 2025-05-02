@@ -27,13 +27,11 @@ import {
   Menu,
   UnstyledButton,
 } from "metabase/ui";
-import type { ApiKey, Group as IGroup } from "metabase-types/api";
+import type { ApiKey, GroupInfo } from "metabase-types/api";
 
 import { groupIdToColor } from "../colors";
 
 import { AddRow } from "./AddRow";
-
-type GroupWithoutMembers = Omit<IGroup, "members">;
 
 // ------------------------------------------------------------ Add Group ------------------------------------------------------------
 
@@ -128,10 +126,10 @@ function DeleteGroupModal({
 }
 
 interface ActionsPopoverProps {
-  group: GroupWithoutMembers;
+  group: GroupInfo;
   apiKeys: ApiKey[];
-  onEditGroupClicked: (group: GroupWithoutMembers) => void;
-  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
+  onEditGroupClicked: (group: GroupInfo) => void;
+  onDeleteGroupClicked: (group: GroupInfo) => void;
 }
 
 function ActionsPopover({
@@ -170,7 +168,7 @@ function ActionsPopover({
 }
 
 interface EditingGroupRowProps {
-  group: GroupWithoutMembers;
+  group: GroupInfo;
   textHasChanged: boolean;
   onTextChange: (text: string) => void;
   onCancelClicked: () => void;
@@ -216,11 +214,11 @@ function EditingGroupRow({
 // ------------------------------------------------------------ Groups Table: not editing ------------------------------------------------------------
 
 interface GroupRowProps {
-  group: GroupWithoutMembers;
-  groupBeingEdited: GroupWithoutMembers | null;
+  group: GroupInfo;
+  groupBeingEdited: GroupInfo | null;
   apiKeys: ApiKey[];
-  onEditGroupClicked: (group: GroupWithoutMembers) => void;
-  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
+  onEditGroupClicked: (group: GroupInfo) => void;
+  onDeleteGroupClicked: (group: GroupInfo) => void;
   onEditGroupTextChange: (text: string) => void;
   onEditGroupCancelClicked: () => void;
   onEditGroupDoneClicked: () => void;
@@ -298,15 +296,15 @@ const ApiKeyCount = ({ apiKeys }: { apiKeys: ApiKey[] }) => {
 };
 
 interface GroupsTableProps {
-  groups: GroupWithoutMembers[];
+  groups: GroupInfo[];
   text: string;
-  groupBeingEdited: GroupWithoutMembers | null;
+  groupBeingEdited: GroupInfo | null;
   showAddGroupRow: boolean;
   onAddGroupCanceled: () => void;
   onAddGroupCreateButtonClicked: () => void;
   onAddGroupTextChanged: (text: string) => void;
-  onEditGroupClicked: (group: GroupWithoutMembers) => void;
-  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
+  onEditGroupClicked: (group: GroupInfo) => void;
+  onDeleteGroupClicked: (group: GroupInfo) => void;
   onEditGroupTextChange: (text: string) => void;
   onEditGroupCancelClicked: () => void;
   onEditGroupDoneClicked: () => void;
@@ -343,7 +341,7 @@ function GroupsTable({
         />
       ) : null}
       {groups &&
-        groups.map((group: GroupWithoutMembers) => (
+        groups.map((group: GroupInfo) => (
           <GroupRow
             key={group.id}
             group={group}
@@ -368,17 +366,17 @@ function GroupsTable({
 // ------------------------------------------------------------ Logic ------------------------------------------------------------
 
 interface GroupsListingProps {
-  groups: GroupWithoutMembers[];
+  groups: GroupInfo[];
   isAdmin: boolean;
   create: (group: { name: string }) => Promise<void>;
   update: (group: { id: number; name: string }) => Promise<void>;
-  delete: (group: GroupWithoutMembers, groupCount: number) => Promise<void>;
+  delete: (group: GroupInfo, groupCount: number) => Promise<void>;
 }
 
 interface GroupsListingState {
   text: string;
   showAddGroupRow: boolean;
-  groupBeingEdited: GroupWithoutMembers | null;
+  groupBeingEdited: GroupInfo | null;
   alertMessage: string | null;
 }
 
@@ -435,7 +433,7 @@ export class GroupsListing extends Component<
     });
   }
 
-  onEditGroupClicked(group: GroupWithoutMembers) {
+  onEditGroupClicked(group: GroupInfo) {
     this.setState({
       groupBeingEdited: { ...group },
       text: "",
@@ -496,10 +494,7 @@ export class GroupsListing extends Component<
     }
   }
 
-  async onDeleteGroupClicked(
-    groups: GroupWithoutMembers[],
-    group: GroupWithoutMembers,
-  ) {
+  async onDeleteGroupClicked(groups: GroupInfo[], group: GroupInfo) {
     try {
       await this.props.delete(group, groups.length);
     } catch (error: any) {
