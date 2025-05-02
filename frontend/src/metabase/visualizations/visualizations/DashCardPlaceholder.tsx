@@ -13,6 +13,7 @@ import { useDispatch } from "metabase/lib/redux";
 import { Button, Flex } from "metabase/ui";
 import { VisualizerModal } from "metabase/visualizer/components/VisualizerModal";
 import type {
+  Card,
   Dashboard,
   VirtualDashboardCard,
   VisualizerVizDefinition,
@@ -44,9 +45,14 @@ function DashCardPlaceholderInner({
 
   const handleSelectVisualization = (
     visualization: VisualizerVizDefinition,
+    cards: Card[],
   ) => {
     dispatch(
-      replaceCardWithVisualization({ dashcardId: dashcard.id, visualization }),
+      replaceCardWithVisualization({
+        dashcardId: dashcard.id,
+        visualization,
+        cards,
+      }),
     );
     setVisualizerModalOpen(false);
   };
