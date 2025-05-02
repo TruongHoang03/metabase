@@ -33,6 +33,8 @@ import { groupIdToColor } from "../colors";
 
 import { AddRow } from "./AddRow";
 
+type GroupWithoutMembers = Omit<IGroup, "members">;
+
 // ------------------------------------------------------------ Add Group ------------------------------------------------------------
 
 interface AddGroupRowProps {
@@ -126,10 +128,10 @@ function DeleteGroupModal({
 }
 
 interface ActionsPopoverProps {
-  group: IGroup;
+  group: GroupWithoutMembers;
   apiKeys: ApiKey[];
-  onEditGroupClicked: (group: IGroup) => void;
-  onDeleteGroupClicked: (group: IGroup) => void;
+  onEditGroupClicked: (group: GroupWithoutMembers) => void;
+  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
 }
 
 function ActionsPopover({
@@ -168,7 +170,7 @@ function ActionsPopover({
 }
 
 interface EditingGroupRowProps {
-  group: IGroup;
+  group: GroupWithoutMembers;
   textHasChanged: boolean;
   onTextChange: (text: string) => void;
   onCancelClicked: () => void;
@@ -214,11 +216,11 @@ function EditingGroupRow({
 // ------------------------------------------------------------ Groups Table: not editing ------------------------------------------------------------
 
 interface GroupRowProps {
-  group: IGroup;
-  groupBeingEdited: IGroup | null;
+  group: GroupWithoutMembers;
+  groupBeingEdited: GroupWithoutMembers | null;
   apiKeys: ApiKey[];
-  onEditGroupClicked: (group: IGroup) => void;
-  onDeleteGroupClicked: (group: IGroup) => void;
+  onEditGroupClicked: (group: GroupWithoutMembers) => void;
+  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
   onEditGroupTextChange: (text: string) => void;
   onEditGroupCancelClicked: () => void;
   onEditGroupDoneClicked: () => void;
@@ -296,15 +298,15 @@ const ApiKeyCount = ({ apiKeys }: { apiKeys: ApiKey[] }) => {
 };
 
 interface GroupsTableProps {
-  groups: IGroup[];
+  groups: GroupWithoutMembers[];
   text: string;
-  groupBeingEdited: IGroup | null;
+  groupBeingEdited: GroupWithoutMembers | null;
   showAddGroupRow: boolean;
   onAddGroupCanceled: () => void;
   onAddGroupCreateButtonClicked: () => void;
   onAddGroupTextChanged: (text: string) => void;
-  onEditGroupClicked: (group: IGroup) => void;
-  onDeleteGroupClicked: (group: IGroup) => void;
+  onEditGroupClicked: (group: GroupWithoutMembers) => void;
+  onDeleteGroupClicked: (group: GroupWithoutMembers) => void;
   onEditGroupTextChange: (text: string) => void;
   onEditGroupCancelClicked: () => void;
   onEditGroupDoneClicked: () => void;
@@ -341,7 +343,7 @@ function GroupsTable({
         />
       ) : null}
       {groups &&
-        groups.map((group: IGroup) => (
+        groups.map((group: GroupWithoutMembers) => (
           <GroupRow
             key={group.id}
             group={group}
@@ -366,17 +368,17 @@ function GroupsTable({
 // ------------------------------------------------------------ Logic ------------------------------------------------------------
 
 interface GroupsListingProps {
-  groups: IGroup[];
+  groups: GroupWithoutMembers[];
   isAdmin: boolean;
   create: (group: { name: string }) => Promise<void>;
   update: (group: { id: number; name: string }) => Promise<void>;
-  delete: (group: IGroup) => Promise<void>;
+  delete: (group: GroupWithoutMembers, groupCount: number) => Promise<void>;
 }
 
 interface GroupsListingState {
   text: string;
   showAddGroupRow: boolean;
-  groupBeingEdited: IGroup | null;
+  groupBeingEdited: GroupWithoutMembers | null;
   alertMessage: string | null;
 }
 
@@ -404,7 +406,6 @@ export class GroupsListing extends Component<
     });
   }
 
-  // TODO: move this to Redux
   async onAddGroupCreateButtonClicked() {
     try {
       await this.props.create({ name: this.state.text.trim() });
@@ -434,7 +435,7 @@ export class GroupsListing extends Component<
     });
   }
 
-  onEditGroupClicked(group: IGroup) {
+  onEditGroupClicked(group: GroupWithoutMembers) {
     this.setState({
       groupBeingEdited: { ...group },
       text: "",
@@ -495,10 +496,12 @@ export class GroupsListing extends Component<
     }
   }
 
-  // TODO: move this to Redux
-  async onDeleteGroupClicked(group: IGroup) {
+  async onDeleteGroupClicked(
+    groups: GroupWithoutMembers[],
+    group: GroupWithoutMembers,
+  ) {
     try {
-      await this.props.delete(group);
+      await this.props.delete(group, groups.length);
     } catch (error: any) {
       console.error("Error deleting group: ", error);
       if (error.data && typeof error.data === "string") {
@@ -536,7 +539,9 @@ export class GroupsListing extends Component<
           onEditGroupTextChange={this.onEditGroupTextChange.bind(this)}
           onEditGroupCancelClicked={this.onEditGroupCancelClicked.bind(this)}
           onEditGroupDoneClicked={this.onEditGroupDoneClicked.bind(this)}
-          onDeleteGroupClicked={this.onDeleteGroupClicked.bind(this)}
+          onDeleteGroupClicked={(group) =>
+            this.onDeleteGroupClicked(groups, group)
+          }
         />
         <Alert
           message={alertMessage}
