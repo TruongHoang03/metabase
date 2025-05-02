@@ -5,7 +5,6 @@ import type {
   StructuredQuestionDetails,
 } from "e2e/support/helpers/api";
 import type { CardId } from "metabase-types/api";
-import { createMockColumn } from "metabase-types/api/mocks";
 import type {
   VisualizerDataSourceId,
   VisualizerDataSourceNameReference,
@@ -27,34 +26,6 @@ function createDataSourceNameRef(
   id: VisualizerDataSourceId,
 ): VisualizerDataSourceNameReference {
   return `$_${id}_name`;
-}
-
-function createDatetimeColumn(opts: any = {}) {
-  return createMockColumn({
-    base_type: "type/DateTime",
-    effective_type: "type/DateTime",
-    semantic_type: null,
-    unit: "month",
-    ...opts,
-  });
-}
-
-function createCategoryColumn(opts: any = {}) {
-  return createMockColumn({
-    base_type: "type/Text",
-    effective_type: "type/Text",
-    semantic_type: "type/Category",
-    ...opts,
-  });
-}
-
-function createNumericColumn(opts: any = {}) {
-  return createMockColumn({
-    base_type: "type/Integer",
-    effective_type: "type/Integer",
-    semantic_type: null,
-    ...opts,
-  });
 }
 
 export const ORDERS_COUNT_BY_CREATED_AT: StructuredQuestionDetailsWithName = {
@@ -206,20 +177,31 @@ export function createDashboardWithVisualizerDashcards() {
   cy.get("@ordersCountByCreatedAtQuestionId").then(function () {
     const {
       ordersCountByCreatedAtQuestionId,
+      ordersCountByCreatedAtQuestionEntityId,
       ordersCountByProductCategoryQuestionId,
+      ordersCountByProductCategoryQuestionEntityId,
       productsCountByCategoryQuestionId,
+      productsCountByCategoryQuestionEntityId,
       productsCountByCreatedAtQuestionId,
+      productsCountByCreatedAtQuestionEntityId,
       landingPageViewsScalarQuestionId,
+      landingPageViewsScalarQuestionEntityId,
       checkoutPageViewsScalarQuestionId,
+      checkoutPageViewsScalarQuestionEntityId,
       paymentDonePageViewsScalarQuestionId,
+      paymentDonePageViewsScalarQuestionEntityId,
       stepColumnQuestionId,
+      stepColumnQuestionEntityId,
       viewsColumnQuestionId,
+      viewsColumnQuestionEntityId,
     } = this;
 
     H.createDashboard().then(({ body: { id: dashboardId } }) => {
       const dc1 = createVisualizerDashcardWithTimeseriesBreakout(
         ordersCountByCreatedAtQuestionId,
+        ordersCountByCreatedAtQuestionEntityId,
         productsCountByCreatedAtQuestionId,
+        productsCountByCreatedAtQuestionEntityId,
         {
           id: -1,
           col: 0,
@@ -231,7 +213,9 @@ export function createDashboardWithVisualizerDashcards() {
 
       const dc2 = createVisualizerDashcardWithCategoryBreakout(
         ordersCountByProductCategoryQuestionId,
+        ordersCountByProductCategoryQuestionEntityId,
         productsCountByCategoryQuestionId,
+        productsCountByCategoryQuestionEntityId,
         {
           id: -2,
           col: 12,
@@ -243,6 +227,7 @@ export function createDashboardWithVisualizerDashcards() {
 
       const dc3 = createVisualizerPieChartDashcard(
         productsCountByCategoryQuestionId,
+        productsCountByCategoryQuestionEntityId,
         {
           id: -3,
           col: 0,
@@ -264,7 +249,9 @@ export function createDashboardWithVisualizerDashcards() {
 
       const dc5 = createVisualizerFunnel(
         stepColumnQuestionId,
+        stepColumnQuestionEntityId,
         viewsColumnQuestionId,
+        viewsColumnQuestionEntityId,
         {
           id: -5,
           col: 0,
@@ -276,8 +263,11 @@ export function createDashboardWithVisualizerDashcards() {
 
       const dc6 = createVisualizerScalarFunnel(
         landingPageViewsScalarQuestionId,
+        landingPageViewsScalarQuestionEntityId,
         checkoutPageViewsScalarQuestionId,
+        checkoutPageViewsScalarQuestionEntityId,
         paymentDonePageViewsScalarQuestionId,
+        paymentDonePageViewsScalarQuestionEntityId,
         {
           id: -6,
           col: 12,
@@ -298,7 +288,9 @@ export function createDashboardWithVisualizerDashcards() {
 
 export function createVisualizerDashcardWithTimeseriesBreakout(
   ordersCountByCreatedAtQuestionId: CardId,
+  ordersCountByCreatedAtQuestionEntityId: string,
   productsCountByCreatedAtQuestionId: CardId,
+  productsCountByCreatedAtQuestionEntityId: string,
   dashcardOpts = {},
 ) {
   return {
@@ -317,53 +309,33 @@ export function createVisualizerDashcardWithTimeseriesBreakout(
     visualization_settings: {
       visualization: {
         display: "line",
-        columns: [
-          createDatetimeColumn({
-            id: ORDERS.CREATED_AT,
-            name: "COLUMN_1",
-            display_name: "Created At: Month",
-          }),
-          createNumericColumn({
-            name: "COLUMN_2",
-            display_name: "Count",
-          }),
-          createDatetimeColumn({
-            id: PRODUCTS.CREATED_AT,
-            name: "COLUMN_3",
-            display_name: `Created At: Month (${PRODUCTS_COUNT_BY_CREATED_AT.name})`,
-          }),
-          createNumericColumn({
-            name: "COLUMN_4",
-            display_name: `Count (${PRODUCTS_COUNT_BY_CREATED_AT.name})`,
-          }),
-        ],
         columnValuesMapping: {
           COLUMN_1: [
             {
               name: "COLUMN_1",
               originalName: "CREATED_AT",
-              sourceId: `card:${ordersCountByCreatedAtQuestionId}`,
+              sourceId: `card:${ordersCountByCreatedAtQuestionEntityId}`,
             },
           ],
           COLUMN_2: [
             {
               name: "COLUMN_2",
               originalName: "count",
-              sourceId: `card:${ordersCountByCreatedAtQuestionId}`,
+              sourceId: `card:${ordersCountByCreatedAtQuestionEntityId}`,
             },
           ],
           COLUMN_3: [
             {
               name: "COLUMN_3",
               originalName: "CREATED_AT",
-              sourceId: `card:${productsCountByCreatedAtQuestionId}`,
+              sourceId: `card:${productsCountByCreatedAtQuestionEntityId}`,
             },
           ],
           COLUMN_4: [
             {
               name: "COLUMN_4",
               originalName: "count",
-              sourceId: `card:${productsCountByCreatedAtQuestionId}`,
+              sourceId: `card:${productsCountByCreatedAtQuestionEntityId}`,
             },
           ],
         },
@@ -379,7 +351,9 @@ export function createVisualizerDashcardWithTimeseriesBreakout(
 
 export function createVisualizerDashcardWithCategoryBreakout(
   ordersCountByCategoryQuestionId: CardId,
+  ordersCountByCategoryQuestionEntityId: string,
   productsCountByCategoryQuestionId: CardId,
+  productsCountByCategoryQuestionEntityId: string,
   dashcardOpts = {},
 ) {
   return {
@@ -398,54 +372,33 @@ export function createVisualizerDashcardWithCategoryBreakout(
     visualization_settings: {
       visualization: {
         display: "bar",
-        columns: [
-          createCategoryColumn({
-            id: PRODUCTS.CATEGORY,
-            fk_field_id: ORDERS.PRODUCT_ID,
-            name: "COLUMN_1",
-            display_name: "Category",
-          }),
-          createNumericColumn({
-            name: "COLUMN_2",
-            display_name: "Count",
-          }),
-          createCategoryColumn({
-            id: PRODUCTS.CATEGORY,
-            name: "COLUMN_3",
-            display_name: `Category (${PRODUCTS_COUNT_BY_CATEGORY.name})`,
-          }),
-          createNumericColumn({
-            name: "COLUMN_4",
-            display_name: `Count (${PRODUCTS_COUNT_BY_CATEGORY.name})`,
-          }),
-        ],
         columnValuesMapping: {
           COLUMN_1: [
             {
               name: "COLUMN_1",
               originalName: "CATEGORY",
-              sourceId: `card:${ordersCountByCategoryQuestionId}`,
+              sourceId: `card:${ordersCountByCategoryQuestionEntityId}`,
             },
           ],
           COLUMN_2: [
             {
               name: "COLUMN_2",
               originalName: "count",
-              sourceId: `card:${ordersCountByCategoryQuestionId}`,
+              sourceId: `card:${ordersCountByCategoryQuestionEntityId}`,
             },
           ],
           COLUMN_3: [
             {
               name: "COLUMN_3",
               originalName: "CATEGORY",
-              sourceId: `card:${productsCountByCategoryQuestionId}`,
+              sourceId: `card:${productsCountByCategoryQuestionEntityId}`,
             },
           ],
           COLUMN_4: [
             {
               name: "COLUMN_4",
               originalName: "count",
-              sourceId: `card:${productsCountByCategoryQuestionId}`,
+              sourceId: `card:${productsCountByCategoryQuestionEntityId}`,
             },
           ],
         },
@@ -461,6 +414,7 @@ export function createVisualizerDashcardWithCategoryBreakout(
 
 export function createVisualizerPieChartDashcard(
   productsCountByCategoryQuestionId: CardId,
+  productsCountByCategoryQuestionEntityId: string,
   dashcardOpts = {},
 ) {
   return {
@@ -470,30 +424,19 @@ export function createVisualizerPieChartDashcard(
     visualization_settings: {
       visualization: {
         display: "pie",
-        columns: [
-          createCategoryColumn({
-            id: PRODUCTS.CATEGORY,
-            name: "COLUMN_1",
-            display_name: "Category",
-          }),
-          createNumericColumn({
-            name: "COLUMN_2",
-            display_name: "Count",
-          }),
-        ],
         columnValuesMapping: {
           COLUMN_1: [
             {
               name: "COLUMN_1",
               originalName: "CATEGORY",
-              sourceId: `card:${productsCountByCategoryQuestionId}`,
+              sourceId: `card:${productsCountByCategoryQuestionEntityId}`,
             },
           ],
           COLUMN_2: [
             {
               name: "COLUMN_2",
               originalName: "count",
-              sourceId: `card:${productsCountByCategoryQuestionId}`,
+              sourceId: `card:${productsCountByCategoryQuestionEntityId}`,
             },
           ],
         },
@@ -508,7 +451,9 @@ export function createVisualizerPieChartDashcard(
 
 export function createVisualizerFunnel(
   stepColumnQuestionId: CardId,
+  stepColumnQuestionEntityId: string,
   viewsColumnQuestionId: CardId,
+  viewsColumnQuestionEntityId: string,
   dashcardOpts = {},
 ) {
   return {
@@ -522,23 +467,19 @@ export function createVisualizerFunnel(
     visualization_settings: {
       visualization: {
         display: "funnel",
-        columns: [
-          createCategoryColumn({ name: "COLUMN_1", display_name: "Step" }),
-          createNumericColumn({ name: "COLUMN_2", display_name: "Views" }),
-        ],
         columnValuesMapping: {
           COLUMN_1: [
             {
               name: "COLUMN_1",
               originalName: "Step",
-              sourceId: `card:${stepColumnQuestionId}`,
+              sourceId: `card:${stepColumnQuestionEntityId}`,
             },
           ],
           COLUMN_2: [
             {
               name: "COLUMN_2",
               originalName: "Views",
-              sourceId: `card:${viewsColumnQuestionId}`,
+              sourceId: `card:${viewsColumnQuestionEntityId}`,
             },
           ],
         },
@@ -554,8 +495,11 @@ export function createVisualizerFunnel(
 
 export function createVisualizerScalarFunnel(
   landingPageViewsScalarQuestionId: CardId,
+  landingPageViewsScalarQuestionEntityId: string,
   checkoutPageViewsScalarQuestionId: CardId,
+  checkoutPageViewsScalarQuestionEntityId: string,
   paymentDonePageViewsScalarQuestionId: CardId,
+  paymentDonePageViewsScalarQuestionEntityId: string,
   dashcardOpts = {},
 ) {
   return {
@@ -578,38 +522,33 @@ export function createVisualizerScalarFunnel(
     visualization_settings: {
       visualization: {
         display: "funnel",
-        columns: [
-          createNumericColumn({ name: "METRIC", display_name: "METRIC" }),
-          createCategoryColumn({
-            name: "DIMENSION",
-            display_name: "DIMENSION",
-          }),
-        ],
         columnValuesMapping: {
           METRIC: [
             {
-              sourceId: `card:${landingPageViewsScalarQuestionId}`,
+              sourceId: `card:${landingPageViewsScalarQuestionEntityId}`,
               originalName: "views",
               name: "COLUMN_1",
             },
             {
-              sourceId: `card:${checkoutPageViewsScalarQuestionId}`,
+              sourceId: `card:${checkoutPageViewsScalarQuestionEntityId}`,
               originalName: "views",
               name: "COLUMN_2",
             },
             {
-              sourceId: `card:${paymentDonePageViewsScalarQuestionId}`,
+              sourceId: `card:${paymentDonePageViewsScalarQuestionEntityId}`,
               originalName: "views",
               name: "COLUMN_3",
             },
           ],
           DIMENSION: [
-            createDataSourceNameRef(`card:${landingPageViewsScalarQuestionId}`),
             createDataSourceNameRef(
-              `card:${checkoutPageViewsScalarQuestionId}`,
+              `card:${landingPageViewsScalarQuestionEntityId}`,
             ),
             createDataSourceNameRef(
-              `card:${paymentDonePageViewsScalarQuestionId}`,
+              `card:${checkoutPageViewsScalarQuestionEntityId}`,
+            ),
+            createDataSourceNameRef(
+              `card:${paymentDonePageViewsScalarQuestionEntityId}`,
             ),
           ],
         },
