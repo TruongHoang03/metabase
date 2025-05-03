@@ -79,7 +79,6 @@
           metabase.api.query-metadata
           metabase.api.routes.common
           metabase.api.table
-          metabase.api.testing
           metabase.api.user
           metabase.api.util
           metabase.api.util.handlers}
@@ -577,8 +576,9 @@
    :uses #{api config events models util}}
 
   sample-data
-  {:api  #{metabase.sample-data}
-   :uses #{plugins sync util}}
+  {:api  #{metabase.sample-data.core
+           metabase.sample-data.init}
+   :uses #{plugins settings sync util}}
 
   search
   {:api #{metabase.search.api
@@ -677,6 +677,12 @@
            request
            task
            util}}
+
+  testing-api
+  {:api  #{metabase.testing-api.api
+           metabase.testing-api.core
+           metabase.testing-api.init}
+   :uses #{analytics api config db premium-features search util}}
 
   tiles
   {:api  #{metabase.tiles.api
